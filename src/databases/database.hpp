@@ -3,25 +3,22 @@
 
 #include <vector>
 
-#include "table.hpp"
+#include "relational/table.hpp"
 
 namespace im
 {
 namespace database
 {
-namespace relational
-{
 
 class Database
 {
 public:
-    using Container = std::vector< Table >;
+    using RelationalContainer = std::vector< relational::Table >;
 
 private:
-    Container m_tables;
+    RelationalContainer m_tables;
 };
 
-} // namespace relational
 } // namespace database
 } // namespace im
 
