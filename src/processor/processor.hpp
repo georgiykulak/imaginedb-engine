@@ -1,6 +1,7 @@
 #ifndef __IMAGINEDB_ENGINE_PROCESSOR_PROCESSOR__
 #define __IMAGINEDB_ENGINE_PROCESSOR_PROCESSOR__
 
+#include <iostream>
 #include <vector>
 #include <string>
 
