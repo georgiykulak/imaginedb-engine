@@ -14,14 +14,13 @@ project(
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED True )
 
+# Library for parsing and processing CLI options
 add_library(
     im_processor STATIC
-        src/processor/processor.cpp
-        src/processor/processor.hpp
+    ${CMAKE_SOURCE_DIR}/processor/processor.cpp
+    ${CMAKE_SOURCE_DIR}/processor/processor.hpp
 )
 
-target_include_directories( im_processor PUBLIC processor )
-
-add_executable( imaginedb-engine src/main.cpp )
+add_executable( imaginedb-engine ${CMAKE_SOURCE_DIR}/main.cpp )
 
 target_link_libraries( imaginedb-engine PUBLIC im_processor )
