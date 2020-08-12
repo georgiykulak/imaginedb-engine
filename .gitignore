@@ -30,7 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Folders for executable and linkeable modules
 build
+extern
 
 # IDE
 .vscode

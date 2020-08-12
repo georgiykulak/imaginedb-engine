@@ -3,50 +3,72 @@
 
 #include <vector>
 #include <string>
-#include <cstdint>
 #include <algorithm>
 
-constexpr const bool DOT_SEPARATOR = 1;
+constexpr const bool DOT_SEPARATOR = true;
 
 namespace im
 {
 namespace container
 {
 
-class Number
+class Number final
 {
 public:
-    using Digit = char;
-    using Array = std::vector< Digit >;
-    enum SignType : char { plus = '+', minus = '-' };
+    using Array = std::vector< char >;
+    using MaxFloat = long double;
 
-    static constexpr const Digit separator = DOT_SEPARATOR ? '.' : ',';
+    enum Sign : char { plus = '+', minus = '-' };
+    enum Periodical : char { no = '#', yes = '&' };
+
+    static constexpr const char  separator = DOT_SEPARATOR ? '.' : ',';
+    static constexpr const char* infinity = "<inf>";
+    static constexpr const char* notReal = "<NaN>";
+
+    ~Number() = default;
 
     Number();
-    Number( intmax_t );
-    Number( uintmax_t );
-    Number( long double );
+
+    Number( MaxFloat );
+    Number( std::string && );
+    Number( std::string const& );
+    
+    Number( Number&& );
     Number( Number const& );
+
+    Number& operator=( Number&& );
+    Number& operator=( Number const& );
+
+    bool operator==( Number const& ) const;
+    bool operator!=( Number const& ) const;
+
     Number operator+() const;
     Number operator-() const;
     Number operator+( Number const& ) const;
     Number operator-( Number const& ) const;
     Number operator*( Number const& ) const;
     Number operator/( Number const& ) const;
+    Number operator%( Number const& ) const;
     Number operator+=( Number const& );
     Number operator-=( Number const& );
     Number operator*=( Number const& );
     Number operator/=( Number const& );
+    Number operator%=( Number const& );
+    
     Number pow( Number const& ) const;
+    Number sqrt( /* Number const& */ ) const;
+    Number abs() const;
+    
     operator bool() const;
     operator std::string() const;
 
+    std::string toString();
+    std::string getRaw();
+
 private:
     Array m_number;
-    SignType m_sign;
 
-    Number::Array toArray( intmax_t ) const;
-    Number::Array toArray( long double ) const;
+    Array toArray( MaxFloat ) const;
 };
 
 } // namespace container
