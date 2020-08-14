@@ -1,6 +1,7 @@
 #ifndef __IMAGINEDB_ENGINE_CONTAINERS_NUMBER_NUMBER__
 #define __IMAGINEDB_ENGINE_CONTAINERS_NUMBER_NUMBER__
 
+#include <array>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -15,15 +16,14 @@ namespace container
 class Number final
 {
 public:
-    using Array = std::vector< char >;
+    using Array = std::vector< unsigned long long >;
     using MaxFloat = long double;
 
-    enum Sign : char { plus = '+', minus = '-' };
-    enum Periodical : char { no = '#', yes = '&' };
-
+    static constexpr const char* infinity = "<infinity>";
+    static constexpr const char* NaN = "<NaN>";
     static constexpr const char  separator = DOT_SEPARATOR ? '.' : ',';
-    static constexpr const char* infinity = "<inf>";
-    static constexpr const char* notReal = "<NaN>";
+    static constexpr const unsigned max_digits = 18;
+    static constexpr const unsigned long long max_integer = 1E19;
 
     ~Number() = default;
 
@@ -62,13 +62,16 @@ public:
     operator bool() const;
     operator std::string() const;
 
-    std::string toString();
-    std::string getRaw();
+    std::string toString() const;
 
 private:
-    Array m_number;
+    Array m_integer;
+    unsigned m_fractional = 0;
 
-    Array toArray( MaxFloat ) const;
+    bool m_is_negative = false;
+    bool m_is_periodical = false;
+    bool m_is_infinite = false;
+    bool m_is_NaN = false;
 };
 
 } // namespace container

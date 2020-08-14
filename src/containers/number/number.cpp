@@ -6,19 +6,30 @@ namespace container
 {
 
 Number::Number()
-    :   m_number( toArray( 0 ) )
+    :   m_integer{ 0 }
 {}
 
 //----------------------------------------------------------------------------//
 
 Number::Number( MaxFloat maxFloat )
-    :   m_number( toArray( maxFloat ) )
-{}
+{
+    m_is_negative = maxFloat < 0;
+
+    maxFloat = std::abs( maxFloat );
+    
+    auto beforeSeparator = static_cast< unsigned long long >( maxFloat );
+    auto afterSeparator = maxFloat - beforeSeparator;
+
+    m_integer.push_back( beforeSeparator );
+
+    m_fractional = afterSeparator * 1E10;
+}
 
 //----------------------------------------------------------------------------//
 
 Number::Number( Number && number )
-    :   m_number( std::move( number.m_number ) )
+    :   m_integer( std::move( number.m_integer ) )
+    ,   m_fractional( number.m_fractional )
 {
     number.~Number();
 }
@@ -26,14 +37,17 @@ Number::Number( Number && number )
 //----------------------------------------------------------------------------//
 
 Number::Number( Number const& number )
-    :   m_number( number.m_number )
+    :   m_integer( number.m_integer )
+    ,   m_fractional( number.m_fractional )
 {}
 
 //----------------------------------------------------------------------------//
 
 Number& Number::operator=( Number&& number )
 {
-    m_number = std::move( number.m_number );
+    m_integer = std::move( number.m_integer );
+    m_fractional = number.m_fractional;
+    
     number.~Number();
 
     return *this;
@@ -43,68 +57,28 @@ Number& Number::operator=( Number&& number )
     
 Number& Number::operator=( Number const& number )
 {
-    m_number = number.m_number;
+    m_integer = number.m_integer;
+    m_fractional = number.m_fractional;
 
     return *this;
 }
 
 //----------------------------------------------------------------------------//
-
-std::string Number::toString()
+//std::stoull for from string conversion
+std::string Number::toString() const
 {
     std::string tmp;
 
-    if ( !m_number.empty() && m_number[ 0 ] == Sign::minus )
-        tmp += Sign::minus;
-
-    for ( std::string::size_type i = 1; i < m_number.size() - 1; ++i )
-        tmp += m_number[ i ];
+    if ( m_is_negative )
+        tmp += '-';
     
-    return tmp;
-}
-//----------------------------------------------------------------------------//
+    for ( auto const& i: m_integer )
+        tmp.append( std::to_string( i ) );
 
-std::string Number::getRaw()
-{
-    std::string tmp;
-
-    for ( auto const c: m_number )
-        tmp += c;
+    tmp += separator;
     
-    return tmp;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-Number::Array Number::toArray( MaxFloat maxFloat ) const
-{
-    Number::Array tmp;
-
-    auto sign = maxFloat < 0 ? Sign::minus : Sign::plus;
-
-    maxFloat = std::abs( maxFloat );
-
-    auto beforeSeparator = static_cast< long long >( maxFloat );
-    auto afterSeparator = maxFloat - beforeSeparator;
-
-    do
-    {
-        tmp.push_back( ( beforeSeparator % 10 ) + '0' );
-    } while ( beforeSeparator /= 10 );
-
-    tmp.push_back( sign );
-    std::reverse( tmp.begin(), tmp.end() );
-    tmp.push_back( separator );
-
-    afterSeparator *= 10;
-    do
-    {
-        tmp.push_back( static_cast< char >( afterSeparator ) + '0' );
-        afterSeparator -= static_cast< long long >( afterSeparator );
-    } while ( afterSeparator *= 10 );
-
-    tmp.push_back( Periodical::no );
-
+    tmp.append( std::to_string( m_fractional ) );
+    
     return tmp;
 }
 
