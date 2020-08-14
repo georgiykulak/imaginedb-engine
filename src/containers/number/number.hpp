@@ -5,7 +5,7 @@
 #include <string>
 #include <algorithm>
 
-constexpr const bool DOT_SEPARATOR = true;
+constexpr const bool DOT_SEPARATOR = true; //replace to common config soon
 
 namespace im
 {
