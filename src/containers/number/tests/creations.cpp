@@ -9,11 +9,11 @@ TEST( Creation, Static_types )
 {
     EXPECT_EQ
     (
-        ( std::is_same_v< Number::Array, std::vector< unsigned long long> > ),
+        ( std::is_same_v< Number::Array, std::vector< unsigned long long > > ),
         true
     );
     EXPECT_EQ( ( std::is_same_v< Number::MaxFloat, long double > ), true );
-    EXPECT_EQ( sizeof( Number ), 32 );
+    EXPECT_EQ( sizeof( Number ), 40 );
     EXPECT_EQ( sizeof( Number::Array ), 24 );
 }
 

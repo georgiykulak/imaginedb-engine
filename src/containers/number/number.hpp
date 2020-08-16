@@ -6,6 +6,8 @@
 #include <string>
 #include <algorithm>
 
+#include <testing/assert.hpp>
+
 constexpr const bool DOT_SEPARATOR = true; //replace to common config soon
 
 namespace im
@@ -16,7 +18,8 @@ namespace container
 class Number final
 {
 public:
-    using Array = std::vector< unsigned long long >;
+    using Size = unsigned long long;
+    using Array = std::vector< Size >;
     using MaxFloat = long double;
 
     static constexpr const char* infinity = "<infinity>";
@@ -29,7 +32,7 @@ public:
 
     Number();
 
-    Number( MaxFloat );
+    Number( MaxFloat ); // TODO
     Number( std::string && );
     Number( std::string const& );
     
@@ -39,39 +42,53 @@ public:
     Number& operator=( Number&& );
     Number& operator=( Number const& );
 
-    bool operator==( Number const& ) const;
-    bool operator!=( Number const& ) const;
-
     Number operator+() const;
     Number operator-() const;
     Number operator+( Number const& ) const;
     Number operator-( Number const& ) const;
     Number operator*( Number const& ) const;
     Number operator/( Number const& ) const;
-    Number operator%( Number const& ) const;
-    Number operator+=( Number const& );
-    Number operator-=( Number const& );
-    Number operator*=( Number const& );
-    Number operator/=( Number const& );
-    Number operator%=( Number const& );
-    
-    Number pow( Number const& ) const;
-    Number sqrt( /* Number const& */ ) const;
-    Number abs() const;
+    Number operator%( Number const& ) const; // TODO
+    // TODO:
+    /*Number& operator++( int );
+    Number& operator++();
+    Number& operator--( int );
+    Number& operator--();*/
+    Number& operator+=( Number const& );
+    Number& operator-=( Number const& );
+    Number& operator*=( Number const& );
+    Number& operator/=( Number const& );
+    Number& operator%=( Number const& );
+
+    bool operator<=>( Number const& ) const = default;
     
     operator bool() const;
     operator std::string() const;
 
+    bool isNegative() const;
+    bool isPeriodical() const;
+    bool isInfinite() const;
+    bool isNaN() const;
+
+    Number& pow( Number const& ); // TODO
+    Number& abs();
+
     std::string toString() const;
 
 private:
-    Array m_integer;
-    unsigned m_fractional = 0;
-
+    Array m_number;
+    Size m_left_shift_size = 0;
     bool m_is_negative = false;
     bool m_is_periodical = false;
     bool m_is_infinite = false;
     bool m_is_NaN = false;
+
+    Size numberLength( Size ) const;
+    Size countDigits( Array const& ) const;
+    Number add( Number const&, Number const& ) const; // TODO
+    Number sub( Number const&, Number const& ) const; // TODO
+    Number mul( Number const&, Number const& ) const; // TODO
+    Number div( Number const&, Number const& ) const; // TODO
 };
 
 } // namespace container
