@@ -5,33 +5,121 @@ namespace im
 namespace container
 {
 
+static inline bool isSigned( std::string const& str )
+{
+    return !str.empty() && ( str[ 0 ] == '-' || str[ 0 ] == '+' );
+}
+
+static inline bool validate( std::string const& str )
+{
+    bool flagSignPresent = false;
+    bool flagSepNotRpts = true;
+
+    if ( str == std::string( Number::infinity ) ||
+         str == std::string( Number::NaN ) )
+        return true;
+
+    if ( isSigned( str ) )
+        flagSignPresent = true;
+
+    auto sz = str.size();
+    for ( std::string::size_type i = flagSignPresent; i < sz; ++i )
+    {
+        if ( str[ i ] < '0' || str[ i ] > '9' )
+        {
+            if ( str[ i ] == Number::separator )
+            {
+                if ( flagSepNotRpts )
+                {
+                    flagSepNotRpts = false;
+                    continue;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static inline void removeSymbols( std::string& str, Number::Size& fss )
+{
+    auto sep = str.find( Number::separator );
+    
+    if ( sep != std::string::npos )
+    {
+        str.erase( sep );
+        fss = str.size() - sep;
+    }
+}
+
+static inline auto stringToVector( std::string const& str )
+{
+    std::vector< std::string > vec;
+
+    // TODO: ALgorithm
+
+    return vec;
+}
+
+static inline Number::Size countDigits( Number::Size integer )
+{
+    Number::Size count = 0;
+
+    do
+        ++count;
+    while ( integer /= 10 );
+
+    return count;
+}
+
+static inline Number::Size numberLength( Number::Array const& number )
+{
+    Number::Size sz = 0;
+
+    for ( auto const& i: number )
+        sz += countDigits( i );
+
+    return sz;
+}
+
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+
 Number::Number()
     :   m_number{ 0 }
 {}
 
 //----------------------------------------------------------------------------//
 
-Number::Number( MaxFloat maxFloat )
+Number::Number( std::string const& str )
 {
-    /*m_is_negative = maxFloat < 0;
+    if ( !validate( str ) )
+        return;
 
-    maxFloat = std::abs( maxFloat );
-    
-    auto beforeSeparator = static_cast< Size >( maxFloat );
-    auto afterSeparator = maxFloat - beforeSeparator;
+    bool flagSepPresent = false;
+    bool flagSigned = isSigned( str );
+    if ( flagSigned )
+        m_is_negative = str[ 0 ] == '-';
 
-    m_number.push_back( beforeSeparator );
+    auto newStr = str;
+    removeSymbols( newStr, m_float_shift_size );
 
-    m_left_shift_size = afterSeparator * 1E10;*/
+    auto arrStr = stringToVector( newStr );
 
-    // TODO
+    for ( auto const& s: arrStr )
+    {
+        m_number.push_back( std::stoull( s, nullptr ) );
+    }
 }
 
 //----------------------------------------------------------------------------//
 
 Number::Number( Number && number )
     :   m_number( std::move( number.m_number ) )
-    ,   m_left_shift_size( number.m_left_shift_size )
+    ,   m_float_shift_size( number.m_float_shift_size )
     ,   m_is_negative( number.m_is_negative )
     ,   m_is_periodical( number.m_is_periodical )
     ,   m_is_infinite( number.m_is_infinite )
@@ -44,7 +132,7 @@ Number::Number( Number && number )
 
 Number::Number( Number const& number )
     :   m_number( number.m_number )
-    ,   m_left_shift_size( number.m_left_shift_size )
+    ,   m_float_shift_size( number.m_float_shift_size )
     ,   m_is_negative( number.m_is_negative )
     ,   m_is_periodical( number.m_is_periodical )
     ,   m_is_infinite( number.m_is_infinite )
@@ -55,12 +143,12 @@ Number::Number( Number const& number )
 
 Number& Number::operator=( Number&& number )
 {
-    m_number          = std::move( number.m_number );
-    m_left_shift_size = number.m_left_shift_size;
-    m_is_negative     = number.m_is_negative;
-    m_is_periodical   = number.m_is_periodical;
-    m_is_infinite     = number.m_is_infinite;
-    m_is_NaN          = number.m_is_NaN;
+    m_number           = std::move( number.m_number );
+    m_float_shift_size = number.m_float_shift_size;
+    m_is_negative      = number.m_is_negative;
+    m_is_periodical    = number.m_is_periodical;
+    m_is_infinite      = number.m_is_infinite;
+    m_is_NaN           = number.m_is_NaN;
     
     number.~Number();
 
@@ -71,12 +159,12 @@ Number& Number::operator=( Number&& number )
     
 Number& Number::operator=( Number const& number )
 {
-    m_number          = number.m_number;
-    m_left_shift_size = number.m_left_shift_size;
-    m_is_negative     = number.m_is_negative;
-    m_is_periodical   = number.m_is_periodical;
-    m_is_infinite     = number.m_is_infinite;
-    m_is_NaN          = number.m_is_NaN;
+    m_number           = number.m_number;
+    m_float_shift_size = number.m_float_shift_size;
+    m_is_negative      = number.m_is_negative;
+    m_is_periodical    = number.m_is_periodical;
+    m_is_infinite      = number.m_is_infinite;
+    m_is_NaN           = number.m_is_NaN;
 
     return *this;
 }
@@ -300,8 +388,8 @@ std::string Number::toString() const
     if ( m_is_negative )
         res += '-';
     
-    auto integerDigits = countDigits( m_number ) - m_left_shift_size;
-    decltype( m_left_shift_size ) k = 0;
+    auto integerDigits = numberLength( m_number ) - m_float_shift_size;
+    decltype( m_float_shift_size ) k = 0;
     for ( auto i: m_number )
     {
         std::string tmp;
@@ -331,37 +419,52 @@ std::string Number::toString() const
 //----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
 
-Number::Size Number::numberLength( Size integer ) const
-{
-    Size count = 0;
-
-    do
-        ++count;
-    while ( integer /= 10 );
-
-    return count;
-}
-
-Number::Size Number::countDigits( Array const& number ) const
-{
-    Size sz = 0;
-
-    for ( auto const& i: number )
-        sz += numberLength( i );
-
-    return sz;
-}
-
-//----------------------------------------------------------------------------//
-
 Number Number::add( Number const& lft, Number const& rht ) const
 {
     IM_ASSERT( lft.isNegative(), "First argument is negative in Number::add()" );
     IM_ASSERT( rht.isNegative(), "Second argument is negative in Number::add()" );
     
     // TODO: ALgorithm
+    Number res;
+    Size prev = 0;
+    auto const& lSize = lft.m_number.size();
+    auto const& rSize = rht.m_number.size();
+    res.m_number.reserve( lSize >= rSize ? lSize : rSize );
 
-    return Number();
+    for ( Size i = 0; i < lSize && i < rSize; ++i )
+    {
+        auto& tmpRes = res.m_number[ i ];
+        auto const lInt = lft.m_number[ i ];
+        auto const rInt = rht.m_number[ i ];
+
+        for ( unsigned j = 0; j < max_digits; ++j )
+        {
+            auto mask = Size( 1 ) << j;
+            auto lBin = lInt & mask;
+            auto rBin = rInt & mask;
+            
+            if ( lBin == 0 && rBin == 0 )
+            {
+                tmpRes |= prev;
+                prev = 0;
+            }
+            else if ( lBin == mask && rBin == mask )
+            {
+                prev = Size( 1 ) << ( j + 1 );
+            }
+            else
+            {
+                if ( prev )
+                    prev = Size( 1 ) << ( j + 1 );
+                else
+                    tmpRes |= mask;
+            }
+        }
+    }
+
+    // for not added part in bigger register ...
+
+    return res;
 }
 
 //----------------------------------------------------------------------------//
@@ -382,8 +485,8 @@ Number Number::mul( Number const& lft, Number const& rht ) const
 {
     Number num;
 
-    if ( lft == Number( 0 ) || rht == Number( 0 ) )
-        return 0;
+    if ( lft == Number( "0" ) || rht == Number( "0" ) )
+        return Number( "0" );
 
     // TODO: ALgorithm
 
@@ -398,7 +501,7 @@ Number Number::div( Number const& lft, Number const& rht ) const
 {
     Number num;
 
-    if ( rht == Number( 0 ) )
+    if ( rht == Number( "0" ) )
     {
         num.m_is_infinite = true;
         return num;

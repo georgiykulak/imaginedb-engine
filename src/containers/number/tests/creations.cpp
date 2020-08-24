@@ -12,7 +12,6 @@ TEST( Creation, Static_types )
         ( std::is_same_v< Number::Array, std::vector< unsigned long long > > ),
         true
     );
-    EXPECT_EQ( ( std::is_same_v< Number::MaxFloat, long double > ), true );
     EXPECT_EQ( sizeof( Number ), 40 );
     EXPECT_EQ( sizeof( Number::Array ), 24 );
 }
@@ -27,13 +26,12 @@ TEST( Creation, Static_values )
     EXPECT_EQ( std::string( Number::infinity ), std::string( "<infinity>" ) );
     EXPECT_EQ( std::string( Number::NaN ), std::string( "<NaN>" ) );
 
-    EXPECT_EQ( Number::max_digits, 18 );
-    EXPECT_EQ( Number::max_integer, 1E19 );
+    EXPECT_EQ( Number::max_digits, 64 );
 }
 
 TEST( Creation, Default_constructor )
 {
-    im::container::Number number;
+    Number number;
     EXPECT_EQ( number.toString(), std::string( "0.0" ) );
 }
 
@@ -49,7 +47,38 @@ TEST( Creation, Move_constructors )
 
 TEST( Creation, Other_constructors )
 {
-    // TODO
+    std::vector< std::string > strings =
+    {
+        "1",
+        "23",
+        "456",
+        "7890",
+        "12345",
+        "678901",
+        "2345678",
+        "90123456",
+        "789012345",
+        "6789012345",
+        "0.1",
+        "0.23",
+        "0.456",
+        "0.7891",
+        "0.23456",
+        "0.789012",
+        "123.456"
+    };
+
+    std::vector< Number > numbers;
+
+    for ( size_t i = 0; i < strings.size(); ++i )
+    {
+        numbers.emplace_back( strings[ i ] );
+        EXPECT_EQ
+        (
+            strings[ i ],
+            numbers[ i ].toString()
+        );
+    }
 }
 
 TESTBENCH();
